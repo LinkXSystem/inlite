@@ -62,9 +62,11 @@ struct Statement_t
 };
 typedef struct Statement_t Statement;
 
-const uint32_t ID_SIZE = sizeof(((Row *)0)->id);
-const uint32_t USERNAME_SIZE = sizeof(((Row *)0)->username);
-const uint32_t EMAIL_SIZE = sizeof(((Row *)0)->email);
+#define size_of_attribute(Struct, Attribute) sizeof(((Struct *)0)->Attribute)
+
+const uint32_t ID_SIZE = size_of_attribute(Row, id);
+const uint32_t USERNAME_SIZE = size_of_attribute(Row, username);
+const uint32_t EMAIL_SIZE = size_of_attribute(Row, email);
 const uint32_t ID_OFFSET = 0;
 const uint32_t USERNAME_OFFSET = ID_OFFSET + ID_SIZE;
 const uint32_t EMAIL_OFFSET = USERNAME_OFFSET + USERNAME_SIZE;
@@ -114,7 +116,8 @@ void *get_page(Pager *pager, uint32_t page_num)
 {
     if (page_num > TABLE_MAX_PAGES)
     {
-        printf("Tried to fetch page number out of bounds. %d > %d\n", page_num, TABLE_MAX_PAGES);
+        printf("Tried to fetch page number out of bounds. %d > %d\n", page_num,
+               TABLE_MAX_PAGES);
         exit(EXIT_FAILURE);
     }
 
@@ -138,9 +141,9 @@ void *get_page(Pager *pager, uint32_t page_num)
                 printf("Error reading file: %d\n", errno);
                 exit(EXIT_FAILURE);
             }
-
-            pager->pages[page_num] = page;
         }
+
+        pager->pages[page_num] = page;
     }
 
     return pager->pages[page_num];
@@ -154,14 +157,6 @@ void *row_slot(Table *table, uint32_t row_num)
     uint32_t byte_offset = row_offset * ROW_SIZE;
     return page + byte_offset;
 }
-
-// Table *new_table()
-// {
-//     Table *table = malloc(sizeof(Table));
-//     table->num_rows = 0;
-
-//     return table;
-// }
 
 Pager *pager_open(const char *filename)
 {
@@ -249,7 +244,8 @@ void pager_flush(Pager *pager, uint32_t page_num, uint32_t size)
         exit(EXIT_FAILURE);
     }
 
-    ssize_t bytes_written = write(pager->file_descriptor, pager->pages[page_num], size);
+    ssize_t bytes_written =
+        write(pager->file_descriptor, pager->pages[page_num], size);
 
     if (bytes_written == -1)
     {
@@ -413,8 +409,6 @@ ExecuteResult execute_statement(Statement *statement, Table *table)
 
 int main(int argc, char *argv[])
 {
-    // Table *table = new_table();
-
     if (argc < 2)
     {
         printf("Must supply a database filename.\n");
@@ -464,7 +458,7 @@ int main(int argc, char *argv[])
 
         switch (execute_statement(&statement, table))
         {
-        case (PREPARE_SUCCESS):
+        case (EXECUTE_SUCCESS):
             printf("Executed.\n");
             break;
         case (EXECUTE_TABLE_FULL):
