@@ -130,7 +130,7 @@ void *get_page(Pager *pager, uint32_t page_num)
 
         if (page_num <= num_pages)
         {
-            lsseek(pager->file_descriptor, page_num * PAGE_SIZE);
+            lseek(pager->file_descriptor, page_num * PAGE_SIZE, SEEK_SET);
             ssize_t bytes_read = read(pager->file_descriptor, page, PAGE_SIZE);
             if (bytes_read == -1)
             {
@@ -179,7 +179,7 @@ Pager *pager_open(const char *filename)
         exit(EXIT_FAILURE);
     }
 
-    off_t file_length = lsseek(fd, 0, SEEK_END);
+    off_t file_length = lseek(fd, 0, SEEK_END);
 
     Pager *pager = malloc(sizeof(Pager));
     pager->file_descriptor = fd;
@@ -241,7 +241,7 @@ void pager_flush(Pager *pager, uint32_t page_num, uint32_t size)
         exit(EXIT_FAILURE);
     }
 
-    off_t offset = lsseek(pager->file_descriptor, page_num * PAGE_SIZE, SEEK_SET);
+    off_t offset = lseek(pager->file_descriptor, page_num * PAGE_SIZE, SEEK_SET);
 
     if (offset == -1)
     {
