@@ -7,3 +7,15 @@
 ```shell
 gem install rspec
 ```
+
+## 安装
+
+```shell
+bundle install --binstubs
+```
+
+## 运行
+
+```shell
+bundle exec rspec
+```
